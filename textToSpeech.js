@@ -11,12 +11,12 @@ var token="";
 //var xmlBodyParser = require('express-xml-parser');
 
 
-function getAudio()
+function getAudio(text,callback)
 {
   if (token=="") return;
 
   var post_data = {
-      tex: "小朋友们大家好我有知识我自豪看蓝猫 学蓝猫我叫大光头葛炮哇",
+      tex: text,
       lan: "zh",
       tok: token,
       ctp: 1,
@@ -36,8 +36,8 @@ function getAudio()
   };
 
   var req = http.request(options, function (res) {
-      console.log('STATUS: ' + res.statusCode);
-      console.log('HEADERS: ' + JSON.stringify(res.headers));
+      console.log('Audio STATUS: ' + res.statusCode);
+      //console.log('HEADERS: ' + JSON.stringify(res.headers));
       var data="";
       res.setEncoding('binary');
       res.on('data', function (chunk) {
@@ -49,7 +49,7 @@ function getAudio()
           file="./audio.mp3"
           options = { encoding: 'binary', mode: 438 /*=0666*/, flag: 'w' };
           fs.writeFileSync(file, data,options);
-
+	  callback();
       });
   });
 
@@ -65,7 +65,7 @@ function getAudio()
 
 
 
-function getToken()
+function getToken(text,callback)
 {
 
   url="https://openapi.baidu.com/oauth/2.0/token?grant_type=client_credentials&client_id={APIKEY}&client_secret={SECRETKEY}&";
@@ -76,9 +76,9 @@ function getToken()
     APIKEY:APIKEY,
     SECRETKEY:SECRETKEY
   });
-  console.log(url);
+  //console.log(url);
   https.get(url, function(res) {
-    console.log("Got response: " + res.statusCode);
+    //console.log("Got response: " + res.statusCode);
     chunk="";
     res.on('data',function(data){
       chunk+=data;
@@ -89,13 +89,16 @@ function getToken()
       var result = JSON.parse(chunk);
       console.log("key:"+result.access_token);
       token=result.access_token;
-      getAudio();
+      getAudio(text,callback);
     });
 
   });
 
-  setTimeout(getToken,7200*1000);
+  //setTimeout(getToken,7200*1000);
 }
 
 
-getToken();
+module.exports=function(text,callback)
+{
+  getToken(text,callback);
+}
