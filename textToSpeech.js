@@ -11,7 +11,7 @@ var token="";
 //var xmlBodyParser = require('express-xml-parser');
 
 
-function getAudio(text,callback)
+function getAudio(text,callback,openid)
 {
   if (token=="") return;
 
@@ -46,10 +46,10 @@ function getAudio(text,callback)
       });
       res.on('end', function (chunk) {
           //console.log('BODY: ' + data);
-          file="./audio.mp3"
+          file="./audio/"+openid+".mp3"
           options = { encoding: 'binary', mode: 438 /*=0666*/, flag: 'w' };
           fs.writeFileSync(file, data,options);
-	  callback();
+	  callback(file);
       });
   });
 
@@ -65,7 +65,7 @@ function getAudio(text,callback)
 
 
 
-function getToken(text,callback)
+function getToken(text,callback,openid)
 {
 
   url="https://openapi.baidu.com/oauth/2.0/token?grant_type=client_credentials&client_id={APIKEY}&client_secret={SECRETKEY}&";
@@ -85,11 +85,11 @@ function getToken(text,callback)
     });
 
     res.on('end',function(data){
-      //console.log(chunk);
+      console.log(chunk);
       var result = JSON.parse(chunk);
       console.log("key:"+result.access_token);
       token=result.access_token;
-      getAudio(text,callback);
+      getAudio(text,callback,openid);
     });
 
   });
@@ -98,7 +98,7 @@ function getToken(text,callback)
 }
 
 
-module.exports=function(text,callback)
+module.exports=function(text,callback,openid)
 {
-  getToken(text,callback);
+  getToken(text,callback,openid);
 }
